@@ -12,7 +12,12 @@ import time
 import re
 
 import pandas as pd
-import pywhatkit
+try:
+    import pywhatkit
+    PYWHATKIT_AVAILABLE = True
+except Exception as e:
+    PYWHATKIT_AVAILABLE = False
+    PYWHATKIT_ERROR = str(e)
 import streamlit as st
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -396,6 +401,16 @@ if st.session_state.df is not None:
     st.markdown("</div>", unsafe_allow_html=True)
 
     if send_clicked:
+        if not PYWHATKIT_AVAILABLE:
+            st.error(
+                "🛑 **Cannot send messages from a cloud server.**\n\n"
+                "This app uses `pywhatkit` to automate WhatsApp by controlling a local browser and keyboard. "
+                "It looks like this app is running on Streamlit Cloud (or a headless server) where there is no display/mouse.\n\n"
+                "👉 **To actually send messages, you need to run this app locally on your own computer.**",
+                icon="❌"
+            )
+            st.stop()
+            
         # ── Safety confirmation ──
         total = len(df)
         st.warning(
